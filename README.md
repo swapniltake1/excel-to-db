@@ -24,13 +24,13 @@ This Spring Boot project provides functionality to save Excel file data into bot
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/spring-boot-excel-to-database.git
+   git clone https://github.com/swapniltake1/excel-to-db.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd spring-boot-excel-to-database
+   cd excel-to-db
    ```
 
 3. Configure database settings in `application.properties`:
