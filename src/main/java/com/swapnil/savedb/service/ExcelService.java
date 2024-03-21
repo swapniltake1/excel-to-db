@@ -14,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swapnil.savedb.entity.NoSQLEntity;
 import com.swapnil.savedb.entity.RelationalEntity;
+import com.swapnil.savedb.repository.NoSQLRepository;
 import com.swapnil.savedb.repository.RelationalRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,9 @@ public class ExcelService {
 
     @Autowired
     private RelationalRepository dynamicRepository;
+    
+    @Autowired
+    private NoSQLRepository noSQLRepository;
 
     public void processExcel(MultipartFile file) throws IOException {
     	log.info("Processing Excel file...");
@@ -32,7 +38,14 @@ public class ExcelService {
         List<Map<String, Object>> excelDataList = parseExcel(file);
 
         // Save data to database
-        saveToDatabase(excelDataList);
+        saveToMySQLDatabase(excelDataList);
+        
+        log.info("data saved into sql database");
+        
+     // Save data to NoSQL database (MongoDB)
+        saveToNoSQLDatabase(excelDataList);
+        log.info("data saved into no-sql database");
+        
         log.info("Excel file processed successfully.");
     }
 
@@ -74,11 +87,29 @@ public class ExcelService {
         }
     }
 
-    private void saveToDatabase(List<Map<String, Object>> excelDataList) {
+    // save data innto sql db
+    private void saveToMySQLDatabase(List<Map<String, Object>> excelDataList) {
         for (Map<String, Object> data : excelDataList) {
             RelationalEntity entity = new RelationalEntity();
             entity.setData(data);
             dynamicRepository.save(entity);
+          //  log.info("data saved into sql database");
+        }
+    }
+    
+    // save data into nosql db
+    private void saveToNoSQLDatabase(List<Map<String, Object>> excelDataList) {
+        try {
+            for (Map<String, Object> data : excelDataList) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String json = objectMapper.writeValueAsString(data);
+                NoSQLEntity entity = new NoSQLEntity();
+                entity.setJsonData(json);
+                noSQLRepository.save(entity);
+              //  log.info("data saved into no-sql database");
+            }
+        } catch (Exception e) {
+            log.error("Error saving data to NoSQL database: {}", e.getMessage());
         }
     }
 }
